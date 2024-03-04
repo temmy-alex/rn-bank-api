@@ -1,0 +1,154 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Account {
+  id    String  @id
+  email String  @unique
+  phone String? @unique
+  password  String
+  information AccountInformation?
+  financial FinancialInformation?
+  attendaces AccountAttendance[]
+  attachments Attachment[]
+  transactions TransactionAccount[]
+  tokens AccountToken[]
+  createdAt DateTime  @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3) @map("updated_at")
+  role Role @relation(fields: [roleId], references: [id])
+  roleId String @map("role_id")
+
+  @@index([email, id])
+  @@map("accounts")
+}
+
+model Role {
+  id String @id
+  name String @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3) @map("updated_at")
+  accounts Account[]
+
+  @@map("roles")
+}
+
+model AccountToken {
+  id String @id
+  firebase String?
+  account Account @relation(fields: [accountId], references: [id])
+  accountId String @map("account_id")
+  createdAt DateTime @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3) @map("updated_at")
+
+  @@map("account_tokens")
+}
+
+model AccountInformation {
+  id        String  @id
+  name      String
+  gender    String?
+  dob       DateTime?
+  profile   String?
+  position  String?
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId String @unique @map("account_id")
+  createdAt DateTime  @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3) @map("updated_at")
+  
+  @@index([accountId, id])
+  @@map("account_informations")
+}
+
+enum AttendanceType {
+  IN
+  OUT
+}
+
+model AccountAttendance {
+  id        String  @id
+  clockDate  DateTime @db.Date @map("clock_date")
+  clockTime   DateTime @db.Time(0) @map("clock_time")
+  attendance  AttendanceType
+  account Account? @relation(fields: [accountId], references: [id])
+  accountId String @map("account_id")
+  createdAt DateTime  @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3) @map("updated_at")
+
+  @@index([clockDate, id, accountId])
+  @@map("account_attendances")
+}
+
+model FinancialInformation {
+  id        String    @id
+  balance   Int       @default(0)
+  point     Int       @default(0)
+  account   Account?  @relation(fields: [accountId], references: [id])
+  accountId String    @unique @map("account_id")
+  createdAt DateTime  @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3) @map("updated_at")
+
+  @@map("financial_informations")
+}
+
+model TransactionAccount {
+  id               String    @id
+  amount           Int       @default(0)
+  totalPayment     Int       @default(0)
+  title            String?
+  description      String?
+  method           String?
+  account   Account?  @relation(fields: [accountId], references: [id])
+  accountId String    @map("account_id")
+  createdAt DateTime  @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3) @map("updated_at")
+
+  @@map("transaction_accounts")
+}
+
+enum AttachmentType {
+  Photo
+  Video
+  Document
+}
+
+enum OwnerType {
+  User
+  Admin
+}
+
+model Attachment {
+  id Int @id @default(autoincrement())
+  size Float?
+  name String?
+  type String?
+  url  String @unique
+  attachmentType AttachmentType @map("attachment_type")
+  attachmentOwner OwnerType @map("attachment_owner")
+  account Account? @relation(fields: [accountId], references: [id])
+  accountId String @map("account_id")
+  createdAt DateTime  @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3) @map("updated_at")
+
+  @@map("attachments")
+}
+
+model Setting {
+  id String @id
+  name String
+  type String
+  value String
+  order Int
+  createdAt DateTime  @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3) @map("updated_at")
+
+  @@map("settings")
+}
