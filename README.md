@@ -1,1 +1,1 @@
-# medic-server
+# API for React Native Apps
