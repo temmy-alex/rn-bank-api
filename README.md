@@ -1,4 +1,8 @@
 # Running API in Local
+## Build using
+> Nodejs
+> Prisma
+> PostgreSQL
 
 1. Running install package
 ```
